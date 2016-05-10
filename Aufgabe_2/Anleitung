@@ -1,0 +1,12 @@
+Verbindung durch VPN
+	sudo openvpn --config abr824.ovpn       
+	
+ssh zugriff
+	ssh root@172.18.0.51
+
+Daten an die docker übertragen
+	scp script.sh root@172.18.0.51:~/
+
+  
+
+
