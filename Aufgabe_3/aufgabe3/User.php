@@ -89,7 +89,7 @@ include 'Util/Sql.php';
                 // create Token
                 $token = TokenService::createToken($userID);
                 $validtime = (NEW Time())->getTimeInSecPlus30min();
-                $sql_createToken = "INSERT INTO `".DB::$TABLE_USER_UNVILID."`(`token`, `validtime`, `email`, `userID`, `isCreate`, `isUsed`) VALUES ('$token','$validtime','$email','$userID','TRUE','FALSE')";
+                $sql_createToken = "INSERT INTO `".DB::$TABLE_USER_UNVILID."`(`token`, `validtime`, `email`, `userID`, `isCreate`, `isUsed`) VALUES ('$token','$validtime','$email','$userID','1','0')";
                 Sql::exe($sql_createToken);
 
                 return $token;
@@ -102,23 +102,22 @@ include 'Util/Sql.php';
 
         public function changePassword($email,$passwordOld, $passwordNew)
         {
-            if(!Sql::isConnected()) return false;
 
             $isLoginSuccess = $this -> login($email,$passwordOld);
-            if(!$isLoginSuccess) return false;
+            if(!$isLoginSuccess) throw new Exception("Anmelde Daten waren nicht korrekt");
 
             try {
                 // get User
-                $sql_getUser = "SELECT * FROM " . DB::$TABLE_USER_VALID . " WHERE " . DB::$COLUMN_EMAIL . " = $email";
+                $sql_getUser = "SELECT * FROM " . DB::$TABLE_USER_VALID . " WHERE " . DB::$COLUMN_EMAIL . " = '$email'";
                 $getUserResponse = Sql::exe($sql_getUser);
 
                 $userID = $getUserResponse[0][DB::$COLUMN_ID];
                 $pwHsh = md5($passwordNew);
                 $pwHsh = md5($userID . $pwHsh);
 
-                $sql_updateUser = "UPDATE " . DB::$TABLE_USER_VALID . " SET `" . DB::$COLUMN_PW . "` = $pwHsh WHERE `" . DB::$COLUMN_ID . "` = $userID";
-                $updateResponse = Sql::exe($sql_updateUser);
-                return self::isEmpty($updateResponse);
+                $sql_updateUser = "UPDATE " . DB::$TABLE_USER_VALID . " SET `" . DB::$COLUMN_PW . "` = '$pwHsh' WHERE `" . DB::$COLUMN_ID . "` = '$userID'";
+                Sql::exe($sql_updateUser);
+
             } catch (RuntimeException $ex){
                 print($ex);
                 die();
@@ -173,6 +172,34 @@ include 'Util/Sql.php';
                     echo "UPDATE USER: ".print_r($sql_responseUpdateUser,true);
                     return $email;
                 }
+            }catch (RuntimeException $e){
+                echo $e->getMessage();
+                die();
+            }
+        }
+
+        public function changeEmail($emailOld, $emailNew)
+        {
+            try{
+                // is Email Exists
+                $sql_getUser = "SELECT * FROM " . DB::$TABLE_USER_VALID . " WHERE " . DB::$COLUMN_EMAIL . " = '$emailNew'";
+                $sql_isExists = Sql::exe($sql_getUser);
+                if(!empty($sql_isExists)) throw new Exception("Email wird bereits verwendet");
+
+                // get User
+                $sql_getUser = "SELECT * FROM " . DB::$TABLE_USER_VALID . " WHERE " . DB::$COLUMN_EMAIL . " = '$emailOld'";
+                $getUserResponse = Sql::exe($sql_getUser);
+
+                $userID = $getUserResponse[0][DB::$COLUMN_ID];
+
+                // create token
+                $token = TokenService::createToken($userID);
+                $validtime = (NEW Time())->getTimeInSecPlus30min();
+                $sql_createToken = "INSERT INTO `".DB::$TABLE_USER_UNVILID."`(`token`, `validtime`, `email`, `userID`, `isCreate`, `isUsed`) VALUES ('$token','$validtime','$emailNew','$userID','0','0')";
+                Sql::exe($sql_createToken);
+
+                return $token;
+
             }catch (RuntimeException $e){
                 echo $e->getMessage();
                 die();

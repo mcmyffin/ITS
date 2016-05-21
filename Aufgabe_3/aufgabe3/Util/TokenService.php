@@ -8,7 +8,6 @@
  */
 class TokenService
 {
-
     public static function createToken($param){
         return md5(time()).md5($param.rand(0,9));
     }

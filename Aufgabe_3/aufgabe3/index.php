@@ -14,44 +14,46 @@ include 'User.php';
 
     
 
-    // user angemeldet
-    if(isset($_COOKIE[$coockieName]) && $_COOKIE[$coockieName] == true){
 
-        if(isset($querryMap["logout"])){
-            setcookie($coockieName,false);
-            setcookie("email",null);
-            echo "<p>Sie wurden abgemeldet</p>";
-            header( "refresh:2;url=index.php" );
-        }else{
-            include 'webapp.php';
+
+    if(isset($querryMap["token"])){
+        // email verifizieren
+        try{
+            $token = $querryMap["token"];
+            echo "TOKEN : ".print_r($token,true)." <br>";
+            $result = $userClass->validateUser($token);
+            print ("Die Email $result wurde erfolgreich bestätigt");
+        }catch (Exception $e){
+            echo $e->getMessage();
         }
 
-    // user nicht angemeldet
-    }else{
+    } else if(isset($querryMap["register"])) {
+        // registrieren
+        echo file_get_contents('register.html');
+    }else if(isset($querryMap["forgot_pass"])){
+        // passwort vergessen
+        echo "TODO PASSWORT VERGESSEN";
+    } else{
 
-        if(isset($querryMap["token"])){
-            // email verifizieren
-            try{
-                $token = $querryMap["token"];
-                echo "TOKEN : ".print_r($token,true)." <br>";
-                $result = $userClass->validateUser($token);
-                print ("Die Email $result wurde erfolgreich bestätigt");
-            }catch (Exception $e){
-                echo $e->getMessage();
+        // user angemeldet
+        if(isset($_COOKIE[$coockieName]) && $_COOKIE[$coockieName] == true){
+
+            if(isset($querryMap["logout"])){
+                setcookie($coockieName,false);
+                setcookie("email",null);
+                echo "<p>Sie wurden abgemeldet</p>";
+                header( "refresh:2;url=index.php" );
+            }else{
+                include 'webapp.php';
             }
-
-        } else if(isset($querryMap["register"])) {
-            // registrieren
-            echo file_get_contents('register.html');
-        }else if(isset($querryMap["forgot_pass"])){
-            // passwort vergessen
-            echo "TODO PASSWORT VERGESSEN";
-        } else{
-            // login
+        }else{
+            // user nicht angemeldet
             echo file_get_contents('login.html');
         }
 
     }
+
+
 
     function querryAsMap(array $array){
         $arr = array();

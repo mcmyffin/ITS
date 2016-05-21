@@ -6,16 +6,19 @@
 </head>
 <body>
 <section class="container">
-<?php   $email = $_COOKIE["email"]; ?>
+    <?php   $email = $_COOKIE["email"]; ?>
     <div class="login">
         <h1>Willkommen</h1>
         <form method="POST" action="change.php">
             <?php
-            echo '<p>Email    <input type="text" value="'.$email.'"></p><p><input type="submit" name="commit" value="Change"></p>';
+            echo '<p>Email</p><p><input name="email" type="text" value="'.$email.'"><input type="submit" name="commit" value="Change"></p>';
             ?>
         </form>
+        <br>
         <form method="POST" action="change.php">
-            <p>Password <input type="password" name="password" value="" placeholder="Password"></p><p><input type="submit" name="commit" value="Change"></p>
+            <p>Passwort Alt</p> <p><input type="password" name="passwordOld" value="" placeholder="Passwort Alt"></p>
+            <p>Passwort Neu</p><p><input type="password" name="password" value="" placeholder="Passwort Neu"></p>
+            <input type="submit" name="commit" value="Change"">
         </form>
     </div>
 
