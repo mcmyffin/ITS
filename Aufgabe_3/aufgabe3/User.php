@@ -20,7 +20,12 @@ include 'Util/Sql.php';
          */
         public function __construct()
         {
-            Sql::connect(DB::$DB_HOST,DB::$DB_USERNAME,DB::$DB_PW, DB::$DB_NAME);
+            try{
+                Sql::connect(DB::$DB_HOST,DB::$DB_USERNAME,DB::$DB_PW, DB::$DB_NAME);
+            }catch (RuntimeException $e){
+                echo "Der Dienst ist vorruebergehend nicht erreichbar";
+                die();
+            }
         }
 
         function login($email, $password)
@@ -36,7 +41,7 @@ include 'Util/Sql.php';
                 if(sizeof($getUserResponse) != 1) return false;
 
                 $isValid = $getUserResponse[0][DB::$COLUMN_IS_VALID];
-                if(!$isValid) throw new UserNotValidException();
+                if(!$isValid) throw new Exception("Email nicht verifizieret");
 
                 $userID = $getUserResponse[0][DB::$COLUMN_ID];
                 $email_DB = $getUserResponse[0][DB::$COLUMN_EMAIL];
@@ -53,7 +58,7 @@ include 'Util/Sql.php';
                 return ($email == $email_DB) and ($pwHash == $pw_DB);
 
             }catch (RuntimeException $e){
-                print $e;
+                echo "Der Dienst ist vorruebergehend nicht erreichbar";
                 die();
             }
         }
@@ -92,10 +97,8 @@ include 'Util/Sql.php';
                 $sql_createToken = "INSERT INTO `".DB::$TABLE_USER_UNVILID."`(`token`, `validtime`, `email`, `userID`, `isCreate`, `isUsed`) VALUES ('$token','$validtime','$email','$userID','1','0')";
                 Sql::exe($sql_createToken);
 
-                return $token;
-
             }catch (RuntimeException $e){
-                print ($e);
+                echo "Der Dienst ist vorruebergehend nicht erreichbar";
                 die();
             }
         }
@@ -119,7 +122,7 @@ include 'Util/Sql.php';
                 Sql::exe($sql_updateUser);
 
             } catch (RuntimeException $ex){
-                print($ex);
+                echo "Der Dienst ist vorruebergehend nicht erreichbar";
                 die();
             }
         }
@@ -142,7 +145,17 @@ include 'Util/Sql.php';
                 $validTime = $tokenResponse[0][DB::$COLUMN_VALID_TIME];
                 $nowTime = (NEW Time())->getTimeInSec();
 
-                if ($nowTime > $validTime) throw new Exception("Token ist abgelaufen");
+                if ($nowTime > $validTime){
+                    $userID = $tokenResponse[0][DB::$COLUMN_USER_ID];
+                    $email  = $tokenResponse[0][DB::$COLUMN_EMAIL];
+                    $token_new = TokenService::createToken($userID);
+                    $validtime = (NEW Time())->getTimeInSecPlus30min();
+
+                    $sql_createToken = "INSERT INTO `".DB::$TABLE_USER_UNVILID."`(`token`, `validtime`, `email`, `userID`, `isCreate`, `isUsed`) VALUES ('$token_new','$validtime','$email','$userID','1','0')";
+                    Sql::exe($sql_createToken);
+
+                    throw new Exception("<p>Token ist abgelaufen</p><p>Wir haben einen weiteren an Ihre Email-Adresse zugesandt</p>");
+                }
 
                 // set TOKEN USED
                 $sql_setTokenUsed = "UPDATE `" . DB::$TABLE_USER_UNVILID . "` SET `" . DB::$COLUMN_IS_USED . "`= '1' WHERE `" . DB::$COLUMN_TOKEN . "` = '$token'";
@@ -158,7 +171,6 @@ include 'Util/Sql.php';
                     $sql_setValid = "UPDATE `" . DB::$TABLE_USER_VALID . "` SET `" . DB::$COLUMN_IS_VALID . "`= '1' WHERE `" . DB::$COLUMN_ID . "` = '$userID'";
 
                     $sql_responseUpdateUser = Sql::exe($sql_setValid);
-                    echo "UPDATE USER: ".print_r($sql_responseUpdateUser,true);
                     return $email;
 
                 } else {
@@ -169,11 +181,10 @@ include 'Util/Sql.php';
                     $sql_setValid = "UPDATE `" . DB::$TABLE_USER_VALID . "` SET `" . DB::$COLUMN_EMAIL . "` = '$email' , `" . DB::$COLUMN_IS_VALID . "`= '1' WHERE `" . DB::$COLUMN_ID . "` = '$userID'";
 
                     $sql_responseUpdateUser = Sql::exe($sql_setValid);
-                    echo "UPDATE USER: ".print_r($sql_responseUpdateUser,true);
                     return $email;
                 }
             }catch (RuntimeException $e){
-                echo $e->getMessage();
+                echo "Der Dienst ist vorruebergehend nicht erreichbar";
                 die();
             }
         }
@@ -201,7 +212,69 @@ include 'Util/Sql.php';
                 return $token;
 
             }catch (RuntimeException $e){
-                echo $e->getMessage();
+                echo "Der Dienst ist vorruebergehend nicht erreichbar";
+                die();
+            }
+        }
+
+        public function resetPassword($token){
+
+            try{
+
+                // find token
+                $sql_findToken = "SELECT * FROM `".DB::$TABLE_PASS_RES."` WHERE `".DB::$COLUMN_TOKEN."` = '$token'";
+                $response_findToken = Sql::exe($sql_findToken);
+
+                if(empty($response_findToken)) throw new Exception("Token nicht gefunden");
+                if($response_findToken[0][DB::$COLUMN_IS_USED] == 1) throw new Exception("Token bereits eingeloest");
+
+                $userID = $response_findToken[0][DB::$COLUMN_USER_ID];
+                $pwHash = $response_findToken[0][DB::$COLUMN_PW];
+
+                // find User
+                $sql_findUser = "SELECT * FROM ".DB::$TABLE_USER_VALID." WHERE ".DB::$COLUMN_ID." = '$userID' ";
+                $reponse_findUser = Sql::exe($sql_findUser);
+
+                // Debug ausgabe
+                if(empty($reponse_findUser)) throw new RuntimeException("Fehler im Eintrag Password_Reset Tabelle: UserID not found");
+
+                // set Token used
+                $sql_setTokenUsed = "UPDATE `".DB::$TABLE_PASS_RES."` SET `isUsed`='1' WHERE `".DB::$COLUMN_TOKEN."` = '$token'";
+                Sql::exe($sql_setTokenUsed);
+
+                // set New Password
+                $sql_updatePassword = "UPDATE `".DB::$TABLE_USER_VALID."` SET `".DB::$COLUMN_PW."`='$pwHash' WHERE `".DB::$COLUMN_ID."` = '$userID'";
+                Sql::exe($sql_updatePassword);
+
+            }catch (RuntimeException $e){
+                echo "Der Dienst ist vorruebergehend nicht erreichbar";
+                die();
+            }
+        }
+
+        public function requestResetPassword($email,$pw){
+
+            try{
+                // is Email Exists
+                $sql_getUser = "SELECT * FROM " . DB::$TABLE_USER_VALID . " WHERE " . DB::$COLUMN_EMAIL . " = '$email'";
+                $sql_isExists = Sql::exe($sql_getUser);
+
+                if(empty($sql_isExists)) return;
+
+                $userID = $sql_isExists[0][DB::$COLUMN_ID];
+
+                // Hash Password
+                $pwHash = md5($pw);
+                $pwHash = md5($userID.$pwHash);
+
+                // create token
+                $token = TokenService::createToken($userID);
+                $validtime = (NEW Time())->getTimeInSecPlus30min();
+                $sql_createToken = "INSERT INTO `".DB::$TABLE_PASS_RES."`(`token`, `userID`, `validtime`, `password`, `isUsed`) VALUES ('$token','$userID','$validtime','$pwHash','0')";
+                Sql::exe($sql_createToken);
+
+            }catch (RuntimeException $e){
+                echo "Der Dienst ist vorruebergehend nicht erreichbar";
                 die();
             }
         }

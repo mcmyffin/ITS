@@ -25,12 +25,17 @@ if(!empty($_POST)){
 
         try{
             $token = $userClass->createUser($email,$password);
-            echo "<p color='green'>Anmeldung war erfolgreich</p>";
-            echo "Um die E-Mail zu verifizieren klicken Sie <a href='index.php?token=$token'>HIER</a>";
+            echo "<p>Registrierung war erfolgreich</p>";
+            echo "<p>Wir haben Ihnen eine Email mit dem Bestaetigungslink zugesandt</p>";
+            echo "<p>Um die E-Mail zu verifizieren klicken Sie auf den Link in Ihrer Email</p>";
+            echo "<br><p><a href='/email'>zum Email Postfach</a></p>";
+            echo "<p><a href='index.php'>Zur&uuml;ck</a> </p>";
+            redirect(10);
+            
         }catch (Exception $e){
             $message = $e->getMessage();
-            echo "<p color='red'>$message</p>";
-            redirect(5);
+            echo "<p>$message</p>";
+            echo "<p><a href='index.php'>Zur&uuml;ck</a> </p>";
         }
     }
 }else{

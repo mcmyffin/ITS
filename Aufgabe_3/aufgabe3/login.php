@@ -16,16 +16,23 @@ if(!empty($_POST)){
 
     if(isset($email) and isset($password)){
 
-        $userClass = NEW User();
-        $isSuccess = $userClass->login($email,$password);
+        try{
+            $userClass = NEW User();
+            $isSuccess = $userClass->login($email,$password);
 
-        if($isSuccess){
-            setcookie("webapp",true);
-            setcookie("email",$email);
-            echo "Anmeldung war erfolgreich";
-            redirect(1);
-        }else{
-            echo "Benutzername oder Passwort nicht gefunden/falsch<br>";
+            if($isSuccess){
+                setcookie("webapp",true);
+                setcookie("email",$email);
+                echo "Anmeldung war erfolgreich";
+                redirect(1);
+            }else{
+                echo "<p>Benutzername oder Passwort nicht gefunden/falsch</p>";
+                echo "<p><a href='index.php'>Zur&uuml;ck</a> </p>";
+                redirect(10);
+            }
+        }catch (Exception $e){
+            $message = $e->getMessage();
+            echo $message;
             redirect(2);
         }
 

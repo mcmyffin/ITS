@@ -23,7 +23,7 @@ class Sql
             self::$dbh = new PDO('mysql:host=' . $host . $database, $username, $password);
             return;
         }catch(PDOException $e){
-            throw new Exception($e->getMessage());
+            throw new RuntimeException($e->getMessage());
         }
     }
     public static function close()

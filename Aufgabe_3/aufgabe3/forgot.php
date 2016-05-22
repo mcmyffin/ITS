@@ -1,4 +1,6 @@
 <?php
+
+include 'User.php';
 /**
  * Created by PhpStorm.
  * User: dima
@@ -9,20 +11,18 @@
 if(!empty($_POST)){
 
     $email = $_POST['email'];
+    $password = $_POST['password'];
 
-    if(isset($email)){
+    if(isset($email) and isset($password)){
 
         $userClass = NEW User();
 
-        try{
-            $token = $userClass->createUser($email,$password);
-            echo "<p color='green'>Anmeldung war erfolgreich</p>";
-            echo "Um die E-Mail zu verifizieren klicken Sie <a href='index.php?token=$token'>HIER</a>";
-        }catch (Exception $e){
-            $message = $e->getMessage();
-            echo "<p color='red'>$message</p>";
-            redirect(5);
-        }
+        $token = $userClass->requestResetPassword($email,$password);
+        echo "<p>Der Auftrag wurde erfolgreich verarbeitet</p>";
+        echo "<p>Ein Link wurde an die angegebene Email-Adresse zugesandt</p>";
+        echo "<p>Um Ihr passwort zu aendern klicken Sie auf den Link in Ihrer Email</p>";
+        echo "<br><p><a href='/email'>zum Email Postfach</a></p>";
+        echo "<p><a href='index.php'>Zur&uuml;ck</a> </p>";
     }
 }else{
     redirect(0);

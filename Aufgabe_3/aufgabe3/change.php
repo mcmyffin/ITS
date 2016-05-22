@@ -20,13 +20,17 @@ if(!empty($_POST)){
         try {
             $emailOld = $_COOKIE['email'];
             $token = (NEW User())->changeEmail($emailOld,$email);
-            echo "<p>Email aenderung akzeptiert</p>".
-                 "<p>Bitte verifizieren Sie diese <a href='index.php?token=$token'>HIER</a></p>";
+            echo "<p>Email &auml;nderung akzeptiert</p>";
+            echo "<p>Ein Link wurde an die angegebene Email-Adresse zugesandt</p>";
+            echo "<p>Um Ihre Email-Adresse zu &auml;ndern klicken Sie auf den Link in Ihrer Email</p>";
+            echo "<br><p><a href='/email'>zum Email Postfach</a></p>";
+            echo "<p><a href='index.php'>Zur&uuml;ck</a> </p>";
 
         }catch (Exception $e) {
             $message = $e->getMessage();
             echo "<p>$message</p>";
-            redirect(2);
+            echo "<p><a href='index.php'>Zur&uuml;ck</a> </p>";
+            redirect(60);
         }
 
         // "https://sadim.informatik.haw-hamburg.de/index.php?token=meintoken";
@@ -37,12 +41,14 @@ if(!empty($_POST)){
             $email = $_COOKIE['email'];
             (NEW User())->changePassword($email,$passwordold,$passwordnew);
             echo "Ihr passwort wurde erfolgreich geaendert";
-            redirect(2);
+            echo "<p><a href='index.php'>Zur&uuml;ck</a> </p>";
+            redirect(10);
 
         }catch (Exception $e){
             $message = $e->getMessage();
             echo "<p>$message</p>";
-            redirect(2);
+            echo "<p><a href='index.php'>Zur&uuml;ck</a> </p>";
+            redirect(60);
         }
     }else{
         redirect(0);
