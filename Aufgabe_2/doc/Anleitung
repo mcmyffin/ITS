@@ -2,10 +2,18 @@ Verbindung durch VPN
 	sudo openvpn --config abr824.ovpn       
 	
 ssh zugriff
-	ssh root@172.18.0.51
+	ssh root@172.18.0.17
+	oder
+	ssh -i /home/sasa/.ssh/id_rsa root@172.18.0.17  
 
 Daten an die docker übertragen
-	scp script.sh root@172.18.0.51:~/
+	scp script.sh root@172.18.0.17:~/
+
+	docker an remoter 
+	scp root@172.18.0.17:~/pki-example-1/ca/root-ca.crt ~/
+
+root-ca.crt in browser zertifikate hinufügen
+ip und adresse in /etc/host manuell eintragen..
 
   
 
