@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: httpasyncclient-4.0-beta4.jar commons-codec-1.6.jar mysql-
- connector-java-5.1.6.jar commons-logging-1.1.3.jar httpcore-nio-4.3-b
- eta2.jar httpclient-4.3.jar unirest-java-1.3.0.jar guava-18.0.jar htt
- pmime-4.3.jar json-20090211.jar httpcore-4.3.jar
-Main-Class: Main
-
