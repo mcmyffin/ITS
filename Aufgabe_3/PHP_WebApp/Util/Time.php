@@ -17,8 +17,8 @@ class Time
         $this -> month  = date("n");
         $this -> day    = date("j");
 
-        $this -> hour = date("H")+1;
-        $this -> min  = date("i")+1;
+        $this -> hour = date("H");
+        $this -> min  = date("i");
 
 
         $this -> timeInSec =
@@ -40,6 +40,48 @@ class Time
         $minInSec30 = 30*60;
         return $this->timeInSec + $minInSec30;
     }
+
+    /**
+     * @return bool|string
+     */
+    public function getDay()
+    {
+        return $this->day;
+    }
+
+    /**
+     * @return bool|string
+     */
+    public function getHour()
+    {
+        return $this->hour;
+    }
+
+    /**
+     * @return bool|string
+     */
+    public function getMin()
+    {
+        return $this->min;
+    }
+
+    /**
+     * @return bool|string
+     */
+    public function getMonth()
+    {
+        return $this->month;
+    }
+
+    /**
+     * @return bool|string
+     */
+    public function getYear()
+    {
+        return $this->year;
+    }
+
+
 
 }
 

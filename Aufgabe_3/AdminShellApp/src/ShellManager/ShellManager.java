@@ -27,51 +27,42 @@ public class ShellManager {
         checkNotNull(email);
         checkNotNull(password);
 
-        try{
+        // create ValidTime
+        Time t = new Time();
+        long validTime = t.getTimeInSecPlus30Min();
 
-            // create ValidTime
-            Time t = new Time();
-            long validTime = t.getTimeInSecPlus30Min();
+        // 1 x Hash
+        String pwHash = TokenService.createMD5(password);
 
-            // 1 x Hash
-            String pwHash = TokenService.createMD5(password);
+        // create User
+        int userID = db.createUser(email,pwHash);
 
-            // create User
-            int userID = db.createUser(email,pwHash);
+        // 2 x Hash
+        pwHash = TokenService.createMD5(userID+pwHash);
 
-            // 2 x Hash
-            pwHash = TokenService.createMD5(userID+pwHash);
+        // update Password
+        db.changeUserPassword(userID,pwHash);
 
-            // update Password
-            db.changeUserPassword(userID,pwHash);
-
-            // create Token
-            String token = TokenService.createToken(userID);
-            db.createTokenValidEmail(token,email, validTime,userID,true);
-
-        }catch (UnirestException|JSONException ex){
-            throw new TimeServiceException();
-        }
+        // create Token
+        String token = TokenService.createToken(userID);
+        db.createTokenValidEmail(token,email, validTime,userID,true);
     }
 
-    public void changeEmail(String emailOld, String emailNew) throws EmailAlreadyExistsException, EmailNotFoundException, DatabaseConnectionException, UserIdNotFoundException, TimeServiceException {
+    public void changeEmail(String emailOld, String emailNew) throws EmailAlreadyExistsException, EmailNotFoundException, DatabaseConnectionException, UserIdNotFoundException{
         checkNotNull(emailOld);
         checkNotNull(emailNew);
+        
+        // create ValidTime
+        Time t = new Time();
+        long validTime = t.getTimeInSecPlus30Min();
 
-        try {
-            // create ValidTime
-            Time t = new Time();
-            long validTime = t.getTimeInSecPlus30Min();
+        // get UserID
+        int userID = db.findUserIDByEmail(emailOld);
 
-            // get UserID
-            int userID = db.findUserIDByEmail(emailOld);
+        // create Token
+        String token = TokenService.createToken(userID);
+        db.createTokenValidEmail(token, emailNew, validTime, userID, false);
 
-            // create Token
-            String token = TokenService.createToken(userID);
-            db.createTokenValidEmail(token, emailNew, validTime, userID, false);
-        }catch (UnirestException|JSONException ex){
-            throw new TimeServiceException();
-        }
     }
 
     public void changePassword(String email, String passwordNew) throws EmailNotFoundException, DatabaseConnectionException, UserIdNotFoundException {

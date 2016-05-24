@@ -9,7 +9,7 @@ include '../Util/Time.php';
 
  $currentTime = NEW Time();
  header("Content-Type:application/json",true,200);
- echo '{ "time" : "'.$currentTime->getTimeInSec().'" }';
 
+ echo '{"time":"'.$currentTime->getTimeInSec().'","year":"'.$currentTime->getYear().'","month":"'.$currentTime->getMonth().'","day":"'.$currentTime->getDay().'","hour":"'.$currentTime->getHour().'","min":"'.$currentTime->getMin().'"}';
 
 ?>

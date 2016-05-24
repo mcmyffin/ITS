@@ -238,10 +238,6 @@ public class Main {
                 manager.changeEmail(emailOld, emailNew);
                 System.out.println(">> Email wurde erfolgreich geandert");
                 break;
-
-            }catch (TimeServiceException ex){
-                System.err.println(">> Der Zeit Servicer ist nicht erreichbar <<");
-                break;
             }catch(EmailNotFoundException| UserIdNotFoundException ex){
                 System.err.println(">> Die Email: "+emailOld+" wurde nicht gefunden <<");
             }catch (EmailAlreadyExistsException ex){
