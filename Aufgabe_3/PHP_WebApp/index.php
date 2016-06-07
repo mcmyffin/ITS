@@ -13,10 +13,20 @@ include 'User.php';
     $querryMap      = querryAsMap();
 
     
+    if( !(isset($_COOKIE[$coockieName]) and $_COOKIE[$coockieName] == true) and $_SERVER["HTTPS"] == "on" and isset($_SERVER["SSL_CLIENT_I_DN_Email"])){
 
-
-
-    if(isset($querryMap["token"]) and isset($querryMap["forgot_pass"]) and sizeof($querryMap) == 2) {
+        $email = $_SERVER["SSL_CLIENT_I_DN_Email"];
+        if($userClass->isUserExists($email)){
+            // user indentifiziert
+            setcookie("webapp",true);
+            setcookie("email",$email);
+            include 'webapp.php';
+        }else{
+            echo "UNGUELTIGER USER";
+            die();
+        }
+        
+    }else if(isset($querryMap["token"]) and isset($querryMap["forgot_pass"]) and sizeof($querryMap) == 2) {
         // password zurueck setzen
         try{
             $userClass->resetPassword($querryMap["token"]);
@@ -53,7 +63,7 @@ include 'User.php';
     } else{
 
         // user angemeldet
-        if(isset($_COOKIE[$coockieName]) && $_COOKIE[$coockieName] == true){
+        if(isset($_COOKIE[$coockieName]) and $_COOKIE[$coockieName] == true){
 
             if(isset($querryMap["logout"])){
                 setcookie($coockieName,false);

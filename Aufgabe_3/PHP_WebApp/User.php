@@ -63,6 +63,12 @@ include 'Util/Sql.php';
             }
         }
 
+        function isUserExists($email){
+            $sql_isUserExists = "SELECT * FROM ".DB::$TABLE_USER_VALID." WHERE ".DB::$COLUMN_EMAIL." = '$email'";
+            $response = Sql::exe($sql_isUserExists);
+            return (!empty($response));
+        }
+
         function createUser($email, $password)
         {
 
